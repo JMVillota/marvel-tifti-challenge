@@ -8,42 +8,6 @@
       :icon="notificationIcon"
       @close="closeNotification"
     />
-
-    <!-- Fixed Header Search Section -->
-    <div class="search-header" :class="{ 'is-loading': store.loading }">
-      <div class="search-container">
-        <!-- Search Input with loading indicator -->
-        <div class="search-box">
-          <input 
-            type="text" 
-            class="search-input" 
-            placeholder="Search Marvel series..." 
-            v-model="searchQuery"
-            @input="handleSearch"
-          />
-          <div class="search-icon">
-            <div v-if="store.loading" class="mini-spinner"></div>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </div>
-        </div>
-        
-        <!-- Series Type Filter -->
-        <select 
-          class="type-select" 
-          v-model="selectedType"
-        >
-          <option value="">All Series</option>
-          <option value="limited">Limited Series</option>
-          <option value="ongoing">Ongoing Series</option>
-          <option value="one shot">One Shot</option>
-        </select>
-      </div>
-      <div class="loading-bar" v-show="store.loading"></div>
-    </div>
-
     <!-- Main Content Area with Conditional Rendering -->
     <main class="main-content">
       <!-- Initial Loading State -->
@@ -111,7 +75,7 @@
  Displays a grid of Marvel series with search, filtering, and infinite scroll capabilities -->
  
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useMarvelStore } from '@/stores/marvelStore';
 import SeriesCard from '@/components/SeriesCard.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
@@ -187,13 +151,6 @@ const handleToggleSave = (series) => {
  * Debounced search handler to prevent excessive API calls
  */
 let searchTimeout;
-const handleSearch = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    store.resetStore();
-    store.fetchSeries();
-  }, 300);
-};
 
 /**
  * Sets up infinite scroll functionality using Intersection Observer
@@ -220,11 +177,6 @@ const setupInfiniteScroll = () => {
   return observer;
 };
 
-// Watch for type filter changes
-watch(selectedType, () => {
-  store.resetStore();
-  store.fetchSeries();
-});
 
 /**
  * Retry handler for failed fetch attempts

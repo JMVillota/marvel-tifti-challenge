@@ -27,9 +27,6 @@ export const useMarvelStore = defineStore("marvel", {
     
     loading: false,          // Global loading state
     error: null,             // Global error state
-    
-    searchQuery: "",         // Current search query
-    selectedFilters: [],     // Applied filters
   }),
 
   /**
@@ -48,17 +45,7 @@ export const useMarvelStore = defineStore("marvel", {
      */
     getViewedSeriesCount: (state) => state.viewedSeries.length,
     
-    /**
-     * Get series filtered by search query
-     * @returns {Array} Filtered series list
-     */
-    getFilteredSeries: (state) => {
-      if (!state.searchQuery) return state.series;
-      
-      return state.series.filter(series => 
-        series.title.toLowerCase().includes(state.searchQuery.toLowerCase())
-      );
-    },
+
     
     /**
      * Check if a series is saved
@@ -178,38 +165,6 @@ export const useMarvelStore = defineStore("marvel", {
         this.loading = false;
       }
     },
-
-    /**
-     * Searches series by title
-     * @param {string} query - Search query
-     * @returns {Promise<void>}
-     */
-    async searchSeries(query) {
-      try {
-        this.loading = true;
-        this.searchQuery = query;
-        this.offset = 0;
-        this.series = [];
-        
-        if (!query) {
-          await this.fetchSeries();
-          return;
-        }
-
-        const data = await this.makeMarvelRequest('series', {
-          titleStartsWith: query,
-          limit: this.limit
-        });
-        
-        this.series = data.results;
-        
-      } catch (error) {
-        this.error = `Error searching series: ${error.message}`;
-      } finally {
-        this.loading = false;
-      }
-    },
-
     /**
      * Fetches a random character with image for avatar
      * @returns {Promise<void>}
@@ -289,48 +244,12 @@ export const useMarvelStore = defineStore("marvel", {
       localStorage.setItem('marvel-viewed-series', JSON.stringify(this.viewedSeries));
     },
 
-    /**
-     * Loads saved state from localStorage
-     */
-    loadFromLocalStorage() {
-      try {
-        const savedSeries = localStorage.getItem('marvel-saved-series');
-        const viewedSeries = localStorage.getItem('marvel-viewed-series');
-        
-        if (savedSeries) this.savedSeries = JSON.parse(savedSeries);
-        if (viewedSeries) this.viewedSeries = JSON.parse(viewedSeries);
-        
-      } catch (error) {
-        console.error("Error loading from localStorage:", error);
-      }
-    },
 
     /**
      * Clears current error state
      */
     clearError() {
       this.error = null;
-    },
-
-    /**
-     * Resets store to initial state
-     */
-    resetStore() {
-      this.series = [];
-      this.offset = 0;
-      this.loading = false;
-      this.error = null;
-      this.searchQuery = "";
-      this.selectedFilters = [];
-    },
-    
-    /**
-     * Clears series detail state
-     */
-    clearSeriesDetail() {
-      this.seriesDetail = null;
-      this.loading = false;
-      this.error = null;
-    },
+    },    
   }
 });

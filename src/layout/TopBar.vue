@@ -417,7 +417,8 @@ onUnmounted(() => {
   }
   
   .nav-links {
-    gap: 16px;
+    gap: 90px;
+
   }
   
   .nav-container {

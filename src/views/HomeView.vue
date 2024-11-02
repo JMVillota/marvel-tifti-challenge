@@ -638,11 +638,11 @@ onUnmounted(() => {
 @media (max-width: 480px) {
   /* Mobile devices */
   .search-header {
-    height: auto;
+    top: 56px;
   }
 
   .search-container {
-    padding: 0.5rem;
+    padding: 0.5rem;    
   }
 
   .series-grid {

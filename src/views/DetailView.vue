@@ -1183,5 +1183,8 @@ transform: translateY(20px);
     padding: 0 0.75rem 1rem 0.75rem;
     -webkit-overflow-scrolling: touch;
   }
+  .content-wrapper {
+    display: inline;
+  }
 }
 </style>

@@ -110,4 +110,10 @@ body {
     --top-bar-height: 30px;
   }
 }
+
+@media (max-width: 480px) {
+  :root {
+    --top-bar-height: 0.1rem;
+  }
+}
 </style>

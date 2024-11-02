@@ -66,11 +66,22 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMarvelStore } from '@/stores/marvelStore';
 
+/**
+ * Series Card Component
+ * Displays information about a Marvel series in a card format.
+ * Features include series image, title, year range, type badge, and resource counts.
+ */
+
+/**
+ * Component Props
+ */
 const props = defineProps({
+  /** The series object containing all necessary data */
   series: {
     type: Object,
     required: true,
   },
+  /** Flag to determine if the card should be rendered in a smaller view */
   isSmallView: {
     type: Boolean,
     default: false
@@ -81,6 +92,11 @@ const router = useRouter();
 const store = useMarvelStore();
 const hasImageError = ref(false);
 
+/**
+ * Computes the URL for the series thumbnail image
+ * Falls back to a placeholder if the image is not available or fails to load
+ * @returns {string} The URL of the thumbnail image
+ */
 const thumbnailUrl = computed(() => {
   if (hasImageError.value) {
     return '/placeholder-image.jpg';
@@ -91,6 +107,11 @@ const thumbnailUrl = computed(() => {
   return `${path}.${props.series.thumbnail.extension}`;
 });
 
+/**
+ * Formats and computes the year range for display
+ * Handles different cases: unknown year, ongoing series, and completed series
+ * @returns {string} Formatted year range string
+ */
 const yearRange = computed(() => {
   const { startYear, endYear } = props.series;
   const currentYear = new Date().getFullYear();
@@ -100,37 +121,76 @@ const yearRange = computed(() => {
   return `${startYear} - ${endYear}`;
 });
 
+/**
+ * Formats the series type for display with proper capitalization
+ * Defaults to 'Ongoing' if no type is specified
+ * @returns {string} Formatted series type
+ */
 const displayType = computed(() => {
   return props.series.type?.charAt(0).toUpperCase() + 
          props.series.type?.slice(1) || 'Ongoing';
 });
 
+/**
+ * Computes CSS classes for the type badge based on series type
+ * @returns {Object} Object containing CSS class conditions
+ */
 const typeClasses = computed(() => ({
   'limited': props.series.type === 'limited',
   'ongoing': !props.series.type || props.series.type === 'ongoing'
 }));
 
+/**
+ * Checks if the current series is saved in the store
+ * @returns {boolean} True if the series is saved
+ */
 const isSaved = computed(() => {
   return store.isSavedSeries(props.series.id);
 });
 
+/**
+ * Handles image loading errors by setting a flag to show placeholder
+ */
 const handleImageError = () => {
   hasImageError.value = true;
 };
 
+/**
+ * Navigates to the series detail page and adds the series to viewed history
+ */
 const navigateToDetail = () => {
   store.addToViewed(props.series);
   router.push(`/detail/${props.series.id}`);
 };
 
+/**
+ * Event Emits Declaration
+ */
 const emit = defineEmits(['toggle-save']);
 
+/**
+ * Handles the bookmark toggle action
+ * Emits toggle-save event to parent component
+ */
 const handleToggleSaved = () => {
   emit('toggle-save', props.series);
 };
 </script>
 
 <style scoped>
+
+/**
+ * Styles are organized into sections:
+ * 1. Card Container
+ * 2. Image Container and Overlay
+ * 3. Bookmark Button
+ * 4. Content Area
+ * 5. Typography
+ * 6. Badges and Icons
+ * 7. Resource Counts
+ * 8. Responsive Design
+ */
+
 .series-card {
   background: white;
   border-radius: 8px;

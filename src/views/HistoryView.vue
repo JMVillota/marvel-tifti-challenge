@@ -194,32 +194,56 @@
   </div>
 </template>
 
-
 <script setup>
-import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';import { useRouter } from 'vue-router';
+import { computed, ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { useMarvelStore } from '@/stores/marvelStore';
 import ToastNotification from '@/components/ToastNotification.vue';
 
+// Router and Store initialization
 const router = useRouter();
 const store = useMarvelStore();
-const hoveredCard = ref(null);
-const savedCarousel = ref(null);
-const recentCarousel = ref(null);
-const savedScrollPosition = ref(0);
-const recentScrollPosition = ref(0);
-const maxSavedScroll = ref(0);
-const maxRecentScroll = ref(0);
+
+/**
+ * Component State
+ */
+const hoveredCard = ref(null);              // Currently hovered card ID
+const savedCarousel = ref(null);            // Reference to saved series carousel
+const recentCarousel = ref(null);           // Reference to recent series carousel
+const savedScrollPosition = ref(0);         // Current scroll position of saved carousel
+const recentScrollPosition = ref(0);        // Current scroll position of recent carousel
+const maxSavedScroll = ref(0);             // Maximum scroll width for saved carousel
+const maxRecentScroll = ref(0);            // Maximum scroll width for recent carousel
+
+// Toast notification state
 const showNotification = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success');
 const notificationIcon = ref('');
 
+/**
+ * Computed Properties
+ */
+
+/**
+ * Filters viewed series to exclude saved ones and reverses order
+ * @returns {Array} Filtered and reversed viewed series array
+ */
 const filteredViewedSeries = computed(() => {
   return store.viewedSeries
     .filter(series => !store.savedSeries.some(saved => saved.id === series.id))
     .reverse();
 });
 
+/**
+ * Helper Methods
+ */
+
+/**
+ * Generates thumbnail URL with fallback
+ * @param {Object} series - Series object containing thumbnail data
+ * @returns {string} Complete image URL or fallback image path
+ */
 const getThumbnailUrl = (series) => {
   if (!series?.thumbnail) return '/placeholder-image.jpg';
   
@@ -227,12 +251,23 @@ const getThumbnailUrl = (series) => {
   return `${path}.${series.thumbnail.extension}`;
 };
 
+/**
+ * Formats year range for display
+ * @param {number} start - Start year
+ * @param {number} end - End year
+ * @returns {string} Formatted year range
+ */
 const getYearRange = (start, end) => {
   if (!start) return 'Year Unknown';
   if (!end || end >= new Date().getFullYear()) return `${start} - Present`;
   return `${start} - ${end}`;
 };
 
+/**
+ * Returns class names based on series type
+ * @param {string} type - Series type
+ * @returns {Object} Class object for styling
+ */
 const getTypeClass = (type) => {
   const normalizedType = type?.toLowerCase() || '';
   return {
@@ -242,15 +277,34 @@ const getTypeClass = (type) => {
   };
 };
 
+/**
+ * Checks if a series is saved
+ * @param {number} seriesId - Series ID to check
+ * @returns {boolean} True if series is saved
+ */
 const isSeriesSaved = (seriesId) => {
   return store.savedSeries.some(s => s.id === seriesId);
 };
 
+/**
+ * Navigation and Event Handlers
+ */
+
+/**
+ * Navigates to series detail view
+ * @param {Object} series - Series to view
+ */
 const navigateToDetail = (series) => {
   store.addToViewed(series);
   router.push(`/detail/${series.id}`);
 };
 
+/**
+ * Displays toast notification
+ * @param {string} type - Notification type
+ * @param {string} message - Notification message
+ * @param {string} icon - Optional icon
+ */
 const showToast = (type, message, icon = '') => {
   notificationType.value = type;
   notificationMessage.value = message;
@@ -258,6 +312,10 @@ const showToast = (type, message, icon = '') => {
   showNotification.value = true;
 };
 
+/**
+ * Handles saving/unsaving series with validation
+ * @param {Object} series - Series to toggle
+ */
 const handleToggleSaved = (series) => {
   const success = store.toggleSaved(series);
   if (!success) {
@@ -272,14 +330,13 @@ const handleToggleSaved = (series) => {
   );
 };
 
-const closeNotification = () => {
-  showNotification.value = false;
-};
+/**
+ * Carousel Control Methods
+ */
 
-const handleImageError = (event) => {
-  event.target.src = '/placeholder-image.jpg';
-};
-
+/**
+ * Updates scroll limits for both carousels
+ */
 const updateScrollLimits = () => {
   if (savedCarousel.value) {
     maxSavedScroll.value = Math.max(0, savedCarousel.value.scrollWidth - savedCarousel.value.offsetWidth);
@@ -289,6 +346,11 @@ const updateScrollLimits = () => {
   }
 };
 
+/**
+ * Handles carousel scrolling
+ * @param {string} type - Carousel type ('saved' or 'recent')
+ * @param {number} direction - Scroll direction (1 or -1)
+ */
 const scrollCarousel = (type, direction) => {
   const carousel = type === 'saved' ? savedCarousel.value : recentCarousel.value;
   const scrollAmount = carousel.offsetWidth * 0.8;
@@ -306,6 +368,10 @@ const scrollCarousel = (type, direction) => {
   }
 };
 
+/**
+ * Updates scroll position tracking
+ * @param {string} type - Carousel type
+ */
 const handleCarouselScroll = (type) => {
   const carousel = type === 'saved' ? savedCarousel.value : recentCarousel.value;
   if (type === 'saved') {
@@ -317,6 +383,9 @@ const handleCarouselScroll = (type) => {
   }
 };
 
+/**
+ * Sets up lazy loading for images
+ */
 const setupLazyLoading = () => {
   const options = {
     root: null,
@@ -342,6 +411,9 @@ const setupLazyLoading = () => {
   });
 };
 
+/**
+ * Lifecycle Hooks
+ */
 onMounted(() => {
   updateScrollLimits();
   savedCarousel.value?.addEventListener('scroll', () => handleCarouselScroll('saved'));
@@ -359,6 +431,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyNavigation);
 });
 
+/**
+ * Watchers
+ */
 watch(() => store.savedSeries.length, () => {
   nextTick(() => {
     updateScrollLimits();
@@ -373,6 +448,10 @@ watch(() => filteredViewedSeries.value.length, () => {
   });
 });
 
+/**
+ * Keyboard Navigation Handler
+ * @param {KeyboardEvent} event - Keyboard event
+ */
 const handleKeyNavigation = (event) => {
   if (document.activeElement.tagName === 'INPUT') return;
 
@@ -385,6 +464,7 @@ const handleKeyNavigation = (event) => {
   }
 };
 </script>
+```
 
 
 <style>

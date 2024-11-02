@@ -1,5 +1,6 @@
 <template>
   <div class="home-container">
+    <!-- Toast Notification Component for user feedback -->
     <ToastNotification
       v-model:show="showNotification"
       :message="notificationMessage"
@@ -8,9 +9,10 @@
       @close="closeNotification"
     />
 
-    <!-- Fixed Header Search -->
+    <!-- Fixed Header Search Section -->
     <div class="search-header" :class="{ 'is-loading': store.loading }">
       <div class="search-container">
+        <!-- Search Input with loading indicator -->
         <div class="search-box">
           <input 
             type="text" 
@@ -27,6 +29,8 @@
             </svg>
           </div>
         </div>
+        
+        <!-- Series Type Filter -->
         <select 
           class="type-select" 
           v-model="selectedType"
@@ -40,10 +44,11 @@
       <div class="loading-bar" v-show="store.loading"></div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content Area with Conditional Rendering -->
     <main class="main-content">
       <!-- Initial Loading State -->
       <div v-if="store.loading && !store.series.length" class="loading-state">
+        <!-- Marvel-themed loader animation -->
         <div class="marvel-loader">
           <div class="loader-ring red"></div>
           <div class="loader-ring blue"></div>
@@ -65,7 +70,7 @@
         <p>No series found. Try adjusting your filters.</p>
       </div>
 
-      <!-- Grid View -->
+      <!-- Series Grid with Transition Effects -->
       <TransitionGroup 
         v-else
         name="series-grid" 
@@ -101,22 +106,32 @@
   </div>
 </template>
 
+
+ <!-- Home View Component
+ Displays a grid of Marvel series with search, filtering, and infinite scroll capabilities -->
+ 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useMarvelStore } from '@/stores/marvelStore';
 import SeriesCard from '@/components/SeriesCard.vue';
 import ToastNotification from '@/components/ToastNotification.vue';
 
+// Store and reactive references
 const store = useMarvelStore();
-const searchQuery = ref('');
-const selectedType = ref('');
-const scrollTrigger = ref(null);
+const searchQuery = ref('');              // Current search input value
+const selectedType = ref('');             // Selected series type filter
+const scrollTrigger = ref(null);          // Ref for infinite scroll detection
 
+// Toast notification state
 const showNotification = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success');
 const notificationIcon = ref('');
 
+/**
+ * Computed property that filters series based on search, type, and valid images
+ * @returns {Array} Filtered array of series
+ */
 const filteredSeries = computed(() => {
   return store.series.filter(series => {
     const hasValidImage = series.thumbnail && 
@@ -130,6 +145,12 @@ const filteredSeries = computed(() => {
   });
 });
 
+/**
+ * Displays a toast notification with specified parameters
+ * @param {string} type - Notification type ('success', 'error', 'info')
+ * @param {string} message - Notification message
+ * @param {string} icon - Optional icon for the notification
+ */
 const showToast = (type, message, icon = '') => {
   notificationType.value = type;
   notificationMessage.value = message;
@@ -137,10 +158,17 @@ const showToast = (type, message, icon = '') => {
   showNotification.value = true;
 };
 
+/**
+ * Closes the current toast notification
+ */
 const closeNotification = () => {
   showNotification.value = false;
 };
 
+/**
+ * Handles toggling series save state with notification feedback
+ * @param {Object} series - Series object to toggle
+ */
 const handleToggleSave = (series) => {
   const success = store.toggleSaved(series);
   if (!success) {
@@ -155,6 +183,9 @@ const handleToggleSave = (series) => {
   );
 };
 
+/**
+ * Debounced search handler to prevent excessive API calls
+ */
 let searchTimeout;
 const handleSearch = () => {
   clearTimeout(searchTimeout);
@@ -164,6 +195,10 @@ const handleSearch = () => {
   }, 300);
 };
 
+/**
+ * Sets up infinite scroll functionality using Intersection Observer
+ * @returns {IntersectionObserver} Configured observer instance
+ */
 const setupInfiniteScroll = () => {
   const observer = new IntersectionObserver(
     (entries) => {
@@ -185,16 +220,21 @@ const setupInfiniteScroll = () => {
   return observer;
 };
 
+// Watch for type filter changes
 watch(selectedType, () => {
   store.resetStore();
   store.fetchSeries();
 });
 
+/**
+ * Retry handler for failed fetch attempts
+ */
 const retryFetch = () => {
   store.clearError();
   store.fetchSeries();
 };
 
+// Lifecycle hooks
 let observer;
 onMounted(async () => {
   await store.fetchSeries();
@@ -210,13 +250,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/**
+ * Root Variables
+ * Define global theming colors and dimensions used throughout the component
+ */
 :root {
-  --marvel-red: #ED1D24;
-  --marvel-blue: #518CCA;
-  --marvel-yellow: #FED112;
-  --header-height: 64px;
+  --marvel-red: #ED1D24;    /* Primary brand color */
+  --marvel-blue: #518CCA;   /* Secondary brand color */
+  --marvel-yellow: #FED112; /* Accent brand color */
+  --header-height: 64px;    /* Fixed header height */
 }
 
+/**
+ * Main Container
+ * Primary container for the home view that spans the full viewport
+ */
 .home-container {
   width: 100%;
   min-height: 100vh;
@@ -224,6 +272,10 @@ onUnmounted(() => {
   position: relative;
 }
 
+/**
+ * State Containers
+ * Styling for error and empty state messages
+ */
 .error-container, .empty-state {
   display: flex;
   flex-direction: column;
@@ -239,6 +291,10 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
+/**
+ * Action Buttons
+ * Styles for interactive buttons with hover states
+ */
 .retry-button {
   padding: 0.5rem 1rem;
   background-color: var(--marvel-red);
@@ -253,6 +309,10 @@ onUnmounted(() => {
   background-color: #c41920;
 }
 
+/**
+ * Search Header
+ * Sticky header containing search and filter controls
+ */
 .search-header {
   position: sticky;
   top: 60px;
@@ -269,6 +329,10 @@ onUnmounted(() => {
   border-bottom-color: var(--marvel-red);
 }
 
+/**
+ * Loading Indicators
+ * Animated loading bar with Marvel brand colors
+ */
 .loading-bar {
   position: absolute;
   bottom: -2px;
@@ -283,6 +347,10 @@ onUnmounted(() => {
   animation: loadingBar 2s linear infinite;
 }
 
+/**
+ * Search Controls Container
+ * Layout for search input and type filter
+ */
 .search-container {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -291,12 +359,20 @@ onUnmounted(() => {
   align-items: center;
 }
 
+/**
+ * Search Box
+ * Container for search input and icon
+ */
 .search-box {
   position: relative;
   flex: 1;
   max-width: 500px;
 }
 
+/**
+ * Search Input
+ * Styled input field with focus states
+ */
 .search-input {
   width: 100%;
   padding: 0.75rem 2.5rem 0.75rem 1rem;
@@ -312,6 +388,10 @@ onUnmounted(() => {
   outline: none;
 }
 
+/**
+ * Search Icon
+ * Positioned icon within search input
+ */
 .search-icon {
   position: absolute;
   right: 0.75rem;
@@ -320,6 +400,10 @@ onUnmounted(() => {
   color: #a0aec0;
 }
 
+/**
+ * Type Select
+ * Dropdown for filtering series types
+ */
 .type-select {
   padding: 0.75rem 1rem;
   border: 2px solid #e2e8f0;
@@ -337,6 +421,10 @@ onUnmounted(() => {
   outline: none;
 }
 
+/**
+ * Main Content
+ * Primary content area with scroll behavior
+ */
 .main-content {
   width: 100%;
   padding: 1.5rem 3rem;
@@ -349,6 +437,10 @@ onUnmounted(() => {
   z-index: 1;
 }
 
+/**
+ * Series Grid
+ * Responsive grid layout for series cards
+ */
 .series-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -357,6 +449,10 @@ onUnmounted(() => {
   padding: 0 1rem;
 }
 
+/**
+ * Series Item
+ * Individual card animation and hover effects
+ */
 .series-item {
   opacity: 0;
   animation: fadeInUp 0.6s ease forwards;
@@ -370,6 +466,10 @@ onUnmounted(() => {
   transform: translateY(-5px) scale(1.02);
 }
 
+/**
+ * Loading States
+ * Styles for initial and incremental loading indicators
+ */
 .loading-state,
 .loading-more {
   display: flex;
@@ -389,6 +489,10 @@ onUnmounted(() => {
   min-height: 150px;
 }
 
+/**
+ * Marvel Loader
+ * Custom animated loader with brand colors
+ */
 .marvel-loader {
   position: relative;
   width: 80px;
@@ -400,6 +504,10 @@ onUnmounted(() => {
   height: 40px;
 }
 
+/**
+ * Loader Rings
+ * Concentric animated rings with brand colors
+ */
 .loader-ring {
   position: absolute;
   width: 100%;
@@ -431,6 +539,10 @@ onUnmounted(() => {
   animation-delay: 0.4s;
 }
 
+/**
+ * Mini Spinner
+ * Compact loading indicator for inline use
+ */
 .mini-spinner {
   width: 16px;
   height: 16px;
@@ -440,6 +552,10 @@ onUnmounted(() => {
   animation: spin 0.8s linear infinite;
 }
 
+/**
+ * Animations
+ * Keyframe definitions for various animations
+ */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -461,6 +577,10 @@ onUnmounted(() => {
   }
 }
 
+/**
+ * Grid Transitions
+ * Animation controls for grid items entering/leaving
+ */
 .series-grid-enter-active,
 .series-grid-leave-active {
   transition: all 0.4s ease;
@@ -472,6 +592,10 @@ onUnmounted(() => {
   transform: translateY(30px) scale(0.95);
 }
 
+/**
+ * Responsive Design
+ * Media queries for different viewport sizes
+ */
 @media (max-width: 1200px) {
   .series-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -484,6 +608,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  /* Tablet and smaller devices */
   .search-container {
     flex-direction: column;
     gap: 0.75rem;
@@ -511,6 +636,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
+  /* Mobile devices */
   .search-header {
     height: auto;
   }

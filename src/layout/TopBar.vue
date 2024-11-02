@@ -109,7 +109,22 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.top-bar {
+/**
+ * TopBar Component Styles
+ * Complete styling for the main navigation header including:
+ * - Fixed header with hardware acceleration
+ * - Marvel branding elements
+ * - Navigation menu
+ * - Character avatar system
+ * - Responsive design
+ */
+
+/* Fixed Header
+ * 1. Fixed positioning for persistent visibility
+ * 2. Hardware acceleration enabled
+ * 3. Shadow for depth
+ */
+ .top-bar {
   background-color: #000000;
   color: white;
   height: 60px;
@@ -125,6 +140,9 @@ onUnmounted(() => {
   will-change: transform;
 }
 
+/* Navigation Container
+ * Main flex container for header elements
+ */
 .nav-container {
   display: flex;
   justify-content: space-between;
@@ -135,6 +153,9 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
+/* Logo Section
+ * Interactive Marvel branding with hover effects
+ */
 .logo-link {
   text-decoration: none;
   display: flex;
@@ -147,12 +168,18 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
+/* Marvel Logo Container
+ * Layout for logo and brand text
+ */
 .marvel-logo-container {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
+/* Marvel Logo
+ * Styled box with Marvel's signature red
+ */
 .marvel-logo {
   background-color: #ED1D24;
   width: 40px;
@@ -170,6 +197,9 @@ onUnmounted(() => {
   box-shadow: 0 6px 16px rgba(237, 29, 36, 0.4);
 }
 
+/* Logo Typography
+ * Text styling for logo and brand
+ */
 .logo-letter {
   color: white;
   font-size: 24px;
@@ -184,6 +214,9 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
+/* Navigation Links
+ * Main menu styling with hover effects
+ */
 .nav-links {
   display: flex;
   list-style: none;
@@ -209,11 +242,9 @@ onUnmounted(() => {
   position: relative;
 }
 
-.nav-links a span {
-  position: relative;
-  z-index: 1;
-}
-
+/* Navigation Indicators
+ * Animated underline for active and hover states
+ */
 .nav-indicator {
   position: absolute;
   bottom: -2px;
@@ -234,6 +265,9 @@ onUnmounted(() => {
   width: 100%;
 }
 
+/* Navigation Icons
+ * Styling for menu icons with hover animation
+ */
 .nav-icon {
   width: 20px;
   height: 20px;
@@ -244,6 +278,9 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
+/* Character Avatar Section
+ * Dynamic Marvel character avatar with animations
+ */
 .avatar-container {
   position: relative;
   width: 44px;
@@ -251,6 +288,9 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
+/* Avatar Ring Animation
+ * Pulsing effect for the avatar border
+ */
 .avatar-ring {
   position: absolute;
   top: -2px;
@@ -263,20 +303,14 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.4;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.8; }
 }
 
+/* Character Avatar Styling
+ * Image container with hover effects
+ */
 .character-avatar {
   width: 100%;
   height: 100%;
@@ -298,6 +332,9 @@ onUnmounted(() => {
   transform: scale(1.2) rotate(5deg);
 }
 
+/* Avatar Info Tooltip
+ * Popup information on hover
+ */
 .avatar-info {
   position: absolute;
   bottom: -48px;
@@ -321,6 +358,9 @@ onUnmounted(() => {
   transform: translateX(-50%) translateY(0);
 }
 
+/* Placeholder and Loading States
+ * Fallback styling when no avatar is available
+ */
 .character-avatar-placeholder {
   width: 100%;
   height: 100%;
@@ -339,6 +379,9 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* Responsive Design
+ * Breakpoints for different screen sizes
+ */
 @media (max-width: 1024px) {
   .nav-container {
     padding: 0 20px;
@@ -387,6 +430,9 @@ onUnmounted(() => {
   }
 }
 
+/* Accessibility
+ * Reduced motion preferences
+ */
 @media (prefers-reduced-motion: reduce) {
   .logo-link,
   .nav-icon,

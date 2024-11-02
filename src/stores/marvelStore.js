@@ -2,30 +2,56 @@
 import { defineStore } from "pinia";
 import md5 from "crypto-js/md5";
 
+/**
+ * Marvel Store - Manages the state and operations for Marvel series and characters
+ * using Pinia for state management.
+ * 
+ * @store marvel
+ */
 export const useMarvelStore = defineStore("marvel", {
+  /**
+   * State - Defines the store's reactive state properties
+   * @returns {Object} Initial state
+   */
   state: () => ({
-    series: [],
-    seriesDetail: null,
-    savedSeries: [],
-    viewedSeries: [],
-
-    characters: [],
-    avatarCharacter: null,
+    series: [],              // List of Marvel series
+    seriesDetail: null,      // Currently selected series details
+    savedSeries: [],         // User's saved series (max 10)
+    viewedSeries: [],        // User's viewing history
     
-    offset: 0,
-    limit: 20,
+    characters: [],          // List of Marvel characters
+    avatarCharacter: null,   // Random character for avatar display
     
-    loading: false,
-    error: null,
+    offset: 0,               // Pagination offset
+    limit: 20,               // Items per page limit
     
-    searchQuery: "",
-    selectedFilters: [],
+    loading: false,          // Global loading state
+    error: null,             // Global error state
+    
+    searchQuery: "",         // Current search query
+    selectedFilters: [],     // Applied filters
   }),
 
+  /**
+   * Getters - Computed state properties
+   */
   getters: {
+    /**
+     * Get the count of saved series
+     * @returns {number} Number of saved series
+     */
     getSavedSeriesCount: (state) => state.savedSeries.length,
+
+    /**
+     * Get the count of viewed series
+     * @returns {number} Number of viewed series
+     */
     getViewedSeriesCount: (state) => state.viewedSeries.length,
     
+    /**
+     * Get series filtered by search query
+     * @returns {Array} Filtered series list
+     */
     getFilteredSeries: (state) => {
       if (!state.searchQuery) return state.series;
       
@@ -34,16 +60,31 @@ export const useMarvelStore = defineStore("marvel", {
       );
     },
     
+    /**
+     * Check if a series is saved
+     * @param {number} seriesId - The ID of the series to check
+     * @returns {boolean} Whether the series is saved
+     */
     isSavedSeries: (state) => (seriesId) => {
       return state.savedSeries.some(series => series.id === seriesId);
     },
     
+    /**
+     * Check if a series has been viewed
+     * @param {number} seriesId - The ID of the series to check
+     * @returns {boolean} Whether the series has been viewed
+     */
     isViewedSeries: (state) => (seriesId) => {
       return state.viewedSeries.some(series => series.id === seriesId);
     }
   },
 
   actions: {
+    /**
+     * Generates Marvel API authentication parameters
+     * @throws {Error} If API keys are not configured
+     * @returns {Object} Authentication parameters
+     */
     generateMarvelAuth() {
       const timestamp = Date.now();
       const publicKey = process.env.VUE_APP_MARVEL_PUBLIC_KEY;
@@ -58,6 +99,13 @@ export const useMarvelStore = defineStore("marvel", {
       return { timestamp, publicKey, hash };
     },
 
+    /**
+     * Makes an authenticated request to the Marvel API
+     * @param {string} endpoint - API endpoint
+     * @param {Object} params - Query parameters
+     * @returns {Promise<Object>} API response data
+     * @throws {Error} If the API request fails
+     */
     async makeMarvelRequest(endpoint, params = {}) {
       try {
         const { timestamp, publicKey, hash } = this.generateMarvelAuth();
@@ -87,6 +135,10 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Fetches series with pagination
+     * @returns {Promise<void>}
+     */
     async fetchSeries() {
       if (this.loading) return;
       
@@ -107,6 +159,11 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Fetches details for a specific series
+     * @param {number} id - Series ID
+     * @returns {Promise<Object|null>} Series details or null if error
+     */
     async fetchSeriesDetail(id) {
       try {
         this.loading = true;
@@ -122,6 +179,11 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Searches series by title
+     * @param {string} query - Search query
+     * @returns {Promise<void>}
+     */
     async searchSeries(query) {
       try {
         this.loading = true;
@@ -148,16 +210,37 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Fetches a random character with image for avatar
+     * @returns {Promise<void>}
+     */
     async fetchRandomCharacter() {
       try {
-        const randomOffset = Math.floor(Math.random() * 1500);
-        const data = await this.makeMarvelRequest('characters', {
-          limit: 1,
-          offset: randomOffset
-        });
+        const maxAttempts = 5; // Prevent infinite loops
+        let attempts = 0;
+        
+        while (attempts < maxAttempts) {
+          const randomOffset = Math.floor(Math.random() * 1500);
+          const data = await this.makeMarvelRequest('characters', {
+            limit: 1,
+            offset: randomOffset
+          });
 
-        if (data.results.length > 0) {
-          this.avatarCharacter = data.results[0];
+          if (data.results.length > 0) {
+            const character = data.results[0];
+            // Check if character has a valid image
+            if (character.thumbnail && 
+                character.thumbnail.path && 
+                !character.thumbnail.path.includes('image_not_available')) {
+              this.avatarCharacter = character;
+              break;
+            }
+          }
+          attempts++;
+        }
+        
+        if (!this.avatarCharacter) {
+          throw new Error("Could not find character with valid image");
         }
         
       } catch (error) {
@@ -166,6 +249,11 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Toggles a series as saved/unsaved
+     * @param {Object} series - Series to toggle
+     * @returns {boolean} Success status
+     */
     toggleSaved(series) {
       const index = this.savedSeries.findIndex(s => s.id === series.id);
       
@@ -182,6 +270,10 @@ export const useMarvelStore = defineStore("marvel", {
       return true;
     },
 
+    /**
+     * Adds a series to viewing history
+     * @param {Object} series - Series to add to history
+     */
     addToViewed(series) {
       if (!this.viewedSeries.find(s => s.id === series.id)) {
         this.viewedSeries.push(series);
@@ -189,11 +281,17 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Updates localStorage with current state
+     */
     updateLocalStorage() {
       localStorage.setItem('marvel-saved-series', JSON.stringify(this.savedSeries));
       localStorage.setItem('marvel-viewed-series', JSON.stringify(this.viewedSeries));
     },
 
+    /**
+     * Loads saved state from localStorage
+     */
     loadFromLocalStorage() {
       try {
         const savedSeries = localStorage.getItem('marvel-saved-series');
@@ -207,10 +305,16 @@ export const useMarvelStore = defineStore("marvel", {
       }
     },
 
+    /**
+     * Clears current error state
+     */
     clearError() {
       this.error = null;
     },
 
+    /**
+     * Resets store to initial state
+     */
     resetStore() {
       this.series = [];
       this.offset = 0;
@@ -220,6 +324,9 @@ export const useMarvelStore = defineStore("marvel", {
       this.selectedFilters = [];
     },
     
+    /**
+     * Clears series detail state
+     */
     clearSeriesDetail() {
       this.seriesDetail = null;
       this.loading = false;

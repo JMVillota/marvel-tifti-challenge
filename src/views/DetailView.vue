@@ -1186,5 +1186,10 @@ transform: translateY(20px);
   .content-wrapper {
     display: inline;
   }
+  @media (max-width: 480px) {
+  :root {
+    --top-bar-height: 0.1rem;
+  }
+}
 }
 </style>

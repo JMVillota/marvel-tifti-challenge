@@ -741,7 +741,6 @@ const handleKeyNavigation = (event) => {
 }
 
 .stats-container {
-  display: flex;
   gap: 1rem;
   margin-top: 1rem;
 }

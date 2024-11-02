@@ -94,8 +94,8 @@ This project includes Marvel data provided by Marvel. © 2024 MARVEL
 ## 👨‍💻 Author
 
 **Jefferson Villota**
-- GitHub: [https://github.com/jefferson1104](https://github.com/jefferson1104)
-- LinkedIn: [https://www.linkedin.com/in/jefferson-villota-murillo-41822ba2](https://www.linkedin.com/in/jefferson-villota-murillo-41822ba2)
+- GitHub: [https://github.com/JMVillota](http//github.com/JMVillota)
+- Porfolio: [https://jeffersonvillota.netlify.app/](https://jeffersonvillota.netlify.app/)
 
 ## 🌟 Acknowledgments
 
